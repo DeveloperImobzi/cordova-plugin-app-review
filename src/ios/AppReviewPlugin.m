@@ -5,12 +5,19 @@
 
 - (void)requestReview:(CDVInvokedUrlCommand *)command {
     CDVPluginResult* pluginResult;
-    if ([SKStoreReviewController class]) {
-        [SKStoreReviewController requestReview];
-
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    if (@available(iOS 14.0, *)) {
+        if ([SKStoreReviewController class]) {
+            _currentScene = (UIWindowScene *)[[[[UIApplication sharedApplication] connectedScenes] allObjects] firstObject];
+            if ([_currentScene isKindOfClass:[UIWindowScene class]] && _currentScene.activationState == UISceneActivationStateForegroundActive) {
+                [SKStoreReviewController requestReviewInScene:_currentScene];
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            }
+            else {
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"App is not in Foreground"];
+            }
+        }
     } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Rating dialog requires iOS 10.3+"];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Rating dialog requires iOS 14.0+"];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -30,7 +37,7 @@
         if (writeReview) {
             storeURL = [NSString stringWithFormat:@"%@?action=write-review", storeURL];
         }
-        
+
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:storeURL] options:@{} completionHandler:nil];
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
