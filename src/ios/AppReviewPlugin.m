@@ -4,10 +4,10 @@
 @implementation AppReviewPlugin
 
 - (void)requestReview:(CDVInvokedUrlCommand *)command {
+    UIWindowScene* _currentScene = (UIWindowScene *)[[[[UIApplication sharedApplication] connectedScenes] allObjects] firstObject];
     CDVPluginResult* pluginResult;
     if (@available(iOS 14.0, *)) {
         if ([SKStoreReviewController class]) {
-            _currentScene = (UIWindowScene *)[[[[UIApplication sharedApplication] connectedScenes] allObjects] firstObject];
             if ([_currentScene isKindOfClass:[UIWindowScene class]] && _currentScene.activationState == UISceneActivationStateForegroundActive) {
                 [SKStoreReviewController requestReviewInScene:_currentScene];
                 pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
